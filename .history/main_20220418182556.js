@@ -61,7 +61,7 @@ for (var p = 0; p < particleCount; p++) {
 }
 
 // create the particle system
-var particleSystem = new THREE.Points(particles, pMaterial);
+var particleSystem = new THREE.ParticleSystem(particles, pMaterial);
 
 // add it to the scene
 scene.addChild(particleSystem);
