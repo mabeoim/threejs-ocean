@@ -1,81 +1,97 @@
 import "./style.css";
-import * as THREE from "three";
+import * as three from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-const scene = new THREE.Scene();
 
-const camera = new THREE.PerspectiveCamera(
+const rSpread = (range) => three.MathUtils.randFloatSpread(range);
+const random = (low, high) => three.MathUtils.randFloat(low, high);
+
+const scene = new three.Scene();
+
+const camera = new three.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
 
-const renderer = new THREE.WebGLRenderer({
+const renderer = new three.WebGLRenderer({
   canvas: document.querySelector("canvas"),
 });
 renderer.setPixelRatio(window.devicePixelRatio);
 renderer.setSize(window.innerWidth, window.innerHeight);
-camera.position.setZ(30);
+camera.position.setZ(300);
+
+window.addEventListener("resize", onWindowResize, false);
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.render(scene, camera);
+}
 
 renderer.render(scene, camera);
-
-const geometry = new THREE.TorusGeometry(10, 3, 64, 100);
-const material = new THREE.MeshBasicMaterial({
-  color: 0xff6347,
-});
-const torus = new THREE.Mesh(geometry, material);
-scene.add(torus);
-
-const pointLight = new THREE.PointLight(0xffffff);
+const pointLight = new three.PointLight(0xffffff);
 pointLight.position.set(5, 5, 5);
 scene.add(pointLight);
 
-const ambientLight = new THREE.AmbientLight(0xffffff);
+const ambientLight = new three.AmbientLight(0xffffff);
 scene.add(ambientLight);
 
-// const lightHelper = new three.PointLightHelper(pointLight);
+// const controls = new OrbitControls(camera, renderer.domElement);
 
-// const gridHelper = new three.GridHelper(200, 50);
-// scene.add(lightHelper, gridHelper);
+const bubbles = [];
 
-const controls = new OrbitControls(camera, renderer.domElement);
+function addBubble(x, y, z) {
+  const geometry = new three.SphereGeometry(1, 24, 24);
 
-var particleCount = 1800,
-  particles = new THREE.BufferGeometry(),
-  pMaterial = new THREE.PointsMaterial({
-    color: 0xffffff,
-    size: 20,
+  const material = new three.MeshStandardMaterial({
+    color: 0x077478,
+    envMap: "reflection",
+    opacity: 0.4,
+    transparent: true,
   });
+  const bubble = new three.Mesh(geometry, material);
 
-// now create the individual particles
-for (var p = 0; p < particleCount; p++) {
-  // create a particle with random
-  // position values, -250 -> 250
-  var pX = Math.random() * 500 - 250,
-    pY = Math.random() * 500 - 250,
-    pZ = Math.random() * 500 - 250,
-    particle = new THREE.Vector3(pX, pY, pZ);
-
-  // add it to the geometry
-  particles.vertices.push(particle);
+  bubble.position.set(x, y, z);
+  bubbles.push(bubble);
+  scene.add(bubble);
 }
 
-// create the particle system
-var particleSystem = new THREE.Points(particles, pMaterial);
+const bubblesCount = 200;
+Array(bubblesCount)
+  .fill()
+  .forEach(() =>
+    addBubble(
+      rSpread(window.innerWidth / 2),
+      rSpread(window.innerHeight),
+      rSpread(800)
+    )
+  );
 
-// add it to the scene
-scene.addChild(particleSystem);
-
-const spaceTexture = new THREE.TextureLoader().load("sea.png");
+const spaceTexture = new three.TextureLoader().load("sea.png");
 scene.background = spaceTexture;
 
 function animate() {
   requestAnimationFrame(animate);
-  torus.rotation.x += 0.01;
-  torus.rotation.y += 0.005;
-  torus.rotation.z += 0.01;
-  controls.update();
+
+  bubbles.forEach((bubble, index) => {
+    bubble.position.y += 0.025;
+    bubble.position.x += rSpread(0.05);
+    if (bubble.position.y > window.innerHeight / 2) {
+      bubbles.splice(index, 1);
+      bubble.removeFromParent();
+      addBubble(rSpread(800), random(-800, -600), rSpread(800));
+    }
+  });
+  // controls.update();
   renderer.render(scene, camera);
 }
 
 animate();
+function updateCamera(ev) {
+  console.log("scroll");
+  // camera.position.x = 10 - window.scrollY / 500.0;
+  camera.position.y = 10 - window.scrollY / 5;
+}
+
+window.addEventListener("scroll", updateCamera);
