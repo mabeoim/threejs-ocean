@@ -1,20 +1,20 @@
+import * as THREE from "three";
 import "./style.css";
-import * as three from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-const rSpread = (range) => three.MathUtils.randFloatSpread(range);
-const random = (low, high) => three.MathUtils.randFloat(low, high);
+const rSpread = (range) => THREE.MathUtils.randFloatSpread(range);
+const random = (low, high) => THREE.MathUtils.randFloat(low, high);
 
-const scene = new three.Scene();
+const scene = new THREE.Scene();
 
-const camera = new three.PerspectiveCamera(
+const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
   0.1,
   1000
 );
 
-const renderer = new three.WebGLRenderer({
+const renderer = new THREE.WebGLRenderer({
   canvas: document.querySelector("canvas"),
 });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -30,27 +30,29 @@ function onWindowResize() {
 }
 
 renderer.render(scene, camera);
-const pointLight = new three.PointLight(0xffffff);
+const pointLight = new THREE.PointLight(0xffffff);
 pointLight.position.set(5, 5, 5);
 scene.add(pointLight);
 
-const ambientLight = new three.AmbientLight(0xffffff);
+const ambientLight = new THREE.AmbientLight(0xffffff);
 scene.add(ambientLight);
 
 // const controls = new OrbitControls(camera, renderer.domElement);
+const spaceTexture = new THREE.TextureLoader().load("sea.png");
+scene.background = spaceTexture;
 
 const bubbles = [];
 
 function addBubble(x, y, z) {
-  const geometry = new three.SphereGeometry(1, 24, 24);
+  const geometry = new THREE.SphereGeometry(1, 24, 24);
 
-  const material = new three.MeshStandardMaterial({
+  const material = new THREE.MeshStandardMaterial({
     color: 0x077478,
     envMap: "reflection",
     opacity: 0.4,
     transparent: true,
   });
-  const bubble = new three.Mesh(geometry, material);
+  const bubble = new THREE.Mesh(geometry, material);
 
   bubble.position.set(x, y, z);
   bubbles.push(bubble);
@@ -68,9 +70,26 @@ Array(bubblesCount)
     )
   );
 
-const spaceTexture = new three.TextureLoader().load("sea.png");
-scene.background = spaceTexture;
+function addParticle(x, y, z) {
+  const geometry = new THREE.SphereGeometry(1, 24, 24);
 
+  const material = new THREE.MeshStandardMaterial({
+    color: 0x077478,
+    envMap: "reflection",
+    opacity: 0.4,
+    transparent: true,
+  });
+  const particle = new THREE.Mesh(geometry, material);
+
+  particle.position.set(x, y, z);
+  // particles.push(particle);
+  scene.add(particle);
+}
+
+const particles = 2000;
+Array(particles)
+  .fill()
+  .forEach(() => addParticle(rSpread(100), rSpread(100), rSpread(100)));
 function animate() {
   requestAnimationFrame(animate);
 
@@ -88,10 +107,3 @@ function animate() {
 }
 
 animate();
-function updateCamera(ev) {
-  console.log("scroll");
-  // camera.position.x = 10 - window.scrollY / 500.0;
-  camera.position.y = 10 - window.scrollY / 5;
-}
-
-window.addEventListener("scroll", updateCamera);
