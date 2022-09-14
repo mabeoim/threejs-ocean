@@ -87,9 +87,9 @@ function addParticle(x, y, z) {
 }
 
 const particles = 2000;
-Array(particles)
-  .fill()
-  .forEach(() => addParticle(rSpread(100), rSpread(100), rSpread(100)));
+// Array(particles)
+//   .fill()
+//   .forEach(() => addParticle(rSpread(100), rSpread(100), rSpread(100)));
 function animate() {
   requestAnimationFrame(animate);
 
